@@ -2,17 +2,31 @@ package main
 
 import (
 	"fmt"
-	"net/http"
+	"log"
+	"net"
+	"os"
+	"os/signal"
+
+	"google.golang.org/grpc"
 )
 
-func handler(w http.ResponseWriter, r *http.Request) {
-	fmt.Fprintf(w, "Hello, World!")
-}
-
 func main() {
-	http.HandleFunc("/", handler)
-	fmt.Println("Starting server at port 8080")
-	if err := http.ListenAndServe(":8080", nil); err != nil {
-		fmt.Println("Failed to start server:", err)
+	port := 8080
+	listener, err := net.Listen("tcp", fmt.Sprintf(":%d", port))
+	if err != nil {
+		panic(err)
 	}
+
+	s := grpc.NewServer()
+
+	go func() {
+		log.Printf("start gRPC server port: %v", port)
+		s.Serve(listener)
+	}()
+
+	quit := make(chan os.Signal, 1)
+	signal.Notify(quit, os.Interrupt)
+	<-quit
+	log.Println("stopping gRPC server...")
+	s.GracefulStop()
 }
