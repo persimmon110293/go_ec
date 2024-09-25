@@ -2,7 +2,7 @@ syntax = "proto3";
 
 option go_package = "pkg/grpc";
 
-package myapp;
+package Myapp;
 
 service HealthCheckService {
 	rpc HealthCheck (HealthCheckRequest) returns (HealthCheckResponse);
